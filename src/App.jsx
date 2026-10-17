@@ -9,6 +9,8 @@ const resolveAsset = (assetPath) => {
   const normalizedPath = String(assetPath).replace(/^\.?\/?/, "").replace(/^\/+/, "");
   return `/${normalizedPath}`;
 };
+
+// commit
 const imageFor = (id) => {
   const product = getProduct(id);
   return product ? resolveAsset(product.img) : "";
