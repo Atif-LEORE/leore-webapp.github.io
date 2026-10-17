@@ -1,165 +1,126 @@
 import { useEffect, useMemo, useState } from "react";
 import catalog from "./data/products.json";
+import "../css/style.css";
 
-const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
-const PRODUCTS = catalog.products.map(({ image, imageAlt, details, ...product }) => ({ ...product, img: image, imgAlt: imageAlt, detail: details }));
-const getProduct = (id) => PRODUCTS.find((product) => product.id === id);
-const resolveAsset = (assetPath) => {
-  if (!assetPath) return "";
-  const normalizedPath = String(assetPath).replace(/^\.?\/?/, "").replace(/^\/+/, "");
-  return `/${normalizedPath}`;
+const fmt = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+const products = catalog.products;
+const img = (p) => "/" + String(p || "").replace(/^\/+/, "");
+const product = (id) => products.find((p) => p.id === id);
+const route = () => {
+  const [path, qs = ""] = location.hash.replace(/^#\/?/, "").split("?");
+  const [page, id] = path.startsWith("product/") ? ["product", path.split("/")[1]] : [path || "home", null];
+  return { page, id, params: new URLSearchParams(qs) };
 };
+const go = (path = "") => { location.hash = "/" + path; window.scrollTo({ top: 0, behavior: "smooth" }); };
 
-// commit
-const imageFor = (id) => {
-  const product = getProduct(id);
-  return product ? resolveAsset(product.img) : "";
-};
-const categories = ["All", "Hoodies"];
-const featuredProduct = PRODUCTS.find((product) => product.id === "signature-hoodie");
+function I({ children = "→" }) { return <span className="arrow" aria-hidden="true">{children}</span>; }
 
-function Header({ cartCount, openPanel }) {
-  return (
-    <nav className="fixed top-0 left-0 w-full z-50 h-20 bg-background/90 backdrop-blur-md border-b border-outline-variant/30">
-      <div className="h-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex justify-between items-center">
-        <div className="flex items-center gap-12">
-          <a className="text-headline-md font-headline font-bold tracking-tighter text-on-background" href="/">LEORÉ</a>
-          <div className="hidden md:flex gap-8">
-            <a className="text-label-caps font-label text-on-surface-variant hover:text-primary transition-colors" href="/shop">Collections</a>
-            <a className="text-label-caps font-label text-on-surface-variant hover:text-primary transition-colors" href="/#lookbook">Lookbook</a>
-            <a className="text-label-caps font-label text-on-surface-variant hover:text-primary transition-colors" href="/#journal">Journal</a>
-          </div>
-        </div>
-        <div className="flex items-center gap-6">
-          <button type="button" onClick={() => openPanel("search")} className="flex items-center text-on-background hover:text-tertiary transition-colors" aria-label="Search products"><span className="material-symbols-outlined">search</span></button>
-          <button type="button" onClick={() => openPanel("cart")} className="flex items-center text-on-background hover:text-tertiary transition-colors relative" aria-label="Open bag">
-            <span className="material-symbols-outlined">shopping_bag</span>
-            <span className={`absolute -top-1 -right-1 text-[10px] bg-tertiary text-background rounded-full w-4 h-4 flex items-center justify-center font-bold ${cartCount ? "" : "opacity-0"}`}>{cartCount}</span>
-          </button>
-          <button type="button" onClick={() => openPanel("mobile")} className="md:hidden flex items-center text-on-background" aria-label="Open menu"><span className="material-symbols-outlined">menu</span></button>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-outline-variant/30 bg-surface-container-lowest">
-      <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          <div><span className="text-headline-lg font-headline font-black tracking-tighter text-on-surface block mb-6">LEORÉ</span><p className="text-on-surface-variant max-w-sm">Premium streetwear with architectural precision, composed for modern city life.</p></div>
-          <FooterColumn title="Support" links={["Shipping", "Returns", "Contact", "FAQ"]} />
-          <FooterColumn title="Connect" links={["Instagram", "TikTok", "Privacy", "Terms"]} />
-        </div>
-        <div className="pt-8 border-t border-outline-variant flex flex-col md:flex-row justify-between items-center gap-4"><span className="text-label-caps font-label text-on-surface-variant">© 2026 LEORÉ. ALL RIGHTS RESERVED.</span><div className="flex gap-8"><span className="text-label-caps font-label text-on-surface-variant">EST. 2026</span><span className="text-label-caps font-label text-on-surface-variant">INDIA</span></div></div>
-      </div>
-    </footer>
-  );
-}
-
-function FooterColumn({ title, links }) {
-  return <div><h4 className="text-label-caps font-label mb-6 uppercase tracking-widest text-on-surface">{title}</h4><ul className="space-y-4 text-on-surface-variant">{links.map((link) => <li key={link}><a className="hover:text-tertiary transition-colors" href="#">{link}</a></li>)}</ul></div>;
-}
-
-function Newsletter() {
-  const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState("");
-  const submit = (event) => { event.preventDefault(); if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setSubmitted(true); };
-  return <section className="py-20 md:py-28 border-t border-outline-variant/30 bg-surface-container-lowest"><div className="max-w-3xl mx-auto text-center px-margin-mobile"><p className="text-label-caps font-label uppercase text-tertiary mb-3">Private Access</p><h2 className="font-headline text-headline-lg uppercase mb-6 tracking-tighter">Join the LEORÉ Collective</h2><p className="font-body-md text-on-surface-variant mb-10">Get early access to limited drops, sizing restocks, and editorial releases.</p>{submitted ? <p className="font-body-lg text-on-background fade-in">You're on the list. Watch your inbox for early access.</p> : <form onSubmit={submit} className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto"><label className="sr-only" htmlFor="newsletter-email">Email address</label><input id="newsletter-email" value={email} onChange={(event) => setEmail(event.target.value)} type="email" required placeholder="you@example.com" className="flex-1 bg-background border border-outline-variant text-on-background px-6 py-4 focus:border-tertiary" /><button type="submit" className="px-8 py-4 bg-on-background text-background font-button text-button uppercase tracking-widest hover:bg-tertiary transition-colors">Subscribe</button></form>}</div></section>;
-}
-
-function ProductCard({ product, openQuickView }) {
-  return <article className="product-card"><div className="media"><img src={resolveAsset(product.img)} alt={product.imgAlt} loading="lazy" />{!product.inStock && <span className="absolute top-3 left-3 z-10 text-label-caps font-label uppercase bg-surface-container-lowest border border-outline-variant px-2 py-1">Sold Out</span>}<div className="quick-add p-3"><button type="button" onClick={() => openQuickView(product.id)} className="w-full py-3 bg-on-background text-background font-button text-button uppercase tracking-widest hover:bg-tertiary transition-colors">{product.inStock ? "Quick View" : "Notify Me"}</button></div></div><button type="button" onClick={() => openQuickView(product.id)} className="text-left mt-4"><h3 className="font-headline text-[17px] text-on-background uppercase">{product.name}</h3><div className="flex justify-between items-center mt-2"><span className="text-label-caps font-label text-on-surface-variant uppercase">{product.category}</span><span className="text-label-caps font-label text-on-background">{money.format(product.price)}</span></div></button></article>;
-}
-
-function Home({ openQuickView }) {
+function Header({ count, search, cart }) {
+  const [menu, setMenu] = useState(false);
   return <>
-    <main>
-      <section className="pt-28 md:pt-36 pb-16 md:pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto"><div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-stretch"><div className="md:col-span-7 relative min-h-[520px] md:min-h-[680px] border border-outline-variant/30 overflow-hidden"><img className="absolute inset-0 w-full h-full object-cover" src={resolveAsset(catalog.heroImage)} alt="Model in minimalist outerwear shot against concrete architecture" /><div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" /><div className="absolute bottom-0 left-0 p-8 md:p-12 max-w-2xl"><p className="text-label-caps font-label uppercase text-tertiary mb-4">Autumn / Winter 2026</p><h1 className="font-headline text-display-lg-mobile md:text-display-lg uppercase tracking-tighter leading-[0.9] mb-6">Engineered<br />Elegance</h1><p className="text-body-lg text-on-surface-variant mb-8">LEORÉ designs structural silhouettes with tactile fabrics and deliberate restraint for the modern city uniform.</p><div className="flex flex-col sm:flex-row gap-4"><a href="/shop" className="px-8 py-4 bg-on-background text-background font-button text-button uppercase tracking-widest hover:bg-tertiary transition-colors text-center">Shop Collection</a><a href="#lookbook" className="px-8 py-4 border border-on-background/60 text-on-background font-button text-button uppercase tracking-widest hover:bg-on-background/10 transition-colors text-center">View Lookbook</a></div></div></div><div className="md:col-span-5 grid grid-rows-2 gap-6 md:gap-8"><div className="relative border border-outline-variant/30 overflow-hidden min-h-[220px] group"><img className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700" src={imageFor(featuredProduct.id)} alt={featuredProduct.imgAlt} /><div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" /><div className="absolute bottom-0 left-0 p-5 md:p-6"><p className="text-label-caps font-label uppercase text-tertiary mb-2">{featuredProduct.tag}</p><p className="text-on-background font-headline text-[20px] uppercase tracking-tight">{featuredProduct.name}</p></div></div><article className="border border-outline-variant/30 bg-gradient-to-br from-surface-container-low to-surface-container-lowest p-6 md:p-8 flex flex-col justify-between"><div><p className="text-label-caps font-label uppercase text-on-surface-variant mb-4">Featured Piece</p><h2 className="font-headline text-headline-lg uppercase tracking-tight mb-4">{featuredProduct.name}</h2><p className="text-on-surface-variant leading-relaxed mb-7">{featuredProduct.detail}</p><div className="grid grid-cols-2 gap-3 mb-8"><div className="border border-outline-variant/40 px-4 py-3"><p className="text-label-caps font-label uppercase text-on-surface-variant mb-1">Fabric</p><p className="text-sm text-on-surface">Organic Fleece</p></div><div className="border border-outline-variant/40 px-4 py-3"><p className="text-label-caps font-label uppercase text-on-surface-variant mb-1">Weight</p><p className="text-sm text-on-surface">500 GSM</p></div></div></div><div className="flex items-center justify-between gap-4"><span className="text-label-caps font-label uppercase text-tertiary">{money.format(featuredProduct.price)}</span><button type="button" onClick={() => openQuickView(featuredProduct.id)} className="px-5 py-3 border border-outline text-label-caps font-label uppercase hover:border-tertiary hover:text-tertiary transition-colors">Quick View</button></div></article></div></div><div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-6 md:mt-8">{[["Drop", "08"], ["Crafted", "In India"], ["Batch Size", "Limited"], ["Materials", "Premium"]].map(([label, value]) => <div key={label} className="border border-outline-variant/30 bg-surface-container-low p-5"><p className="text-label-caps font-label text-on-surface-variant mb-2 uppercase">{label}</p><p className="font-headline text-headline-md">{value}</p></div>)}</div></section>
-      <section id="lookbook" className="py-20 md:py-28 border-y border-outline-variant/30 bg-surface-container-lowest"><div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop"><div className="flex items-end justify-between mb-10 md:mb-14"><div><p className="text-label-caps font-label uppercase text-tertiary mb-2">Lookbook</p><h2 className="font-headline text-headline-lg uppercase tracking-tight">Built for movement</h2></div><a href="/shop" className="hidden md:inline-block text-label-caps font-label uppercase border-b border-on-surface hover:text-tertiary hover:border-tertiary transition-colors">Shop All</a></div><div className="grid grid-cols-1 md:grid-cols-12 gap-6"><a href="/shop?category=Outerwear" className="md:col-span-5 border border-outline-variant/30 overflow-hidden group block min-h-[380px] md:min-h-[520px]"><img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src={imageFor("trench-coat")} alt="Outerwear editorial shot" /></a><div className="md:col-span-7 grid grid-cols-2 gap-6"><a href="/shop?category=Knitwear" className="border border-outline-variant/30 overflow-hidden group block min-h-[250px]"><img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src={imageFor("mockneck-knit")} alt="Knitwear portrait" /></a><a href="/shop?category=Accessories" className="border border-outline-variant/30 overflow-hidden group block min-h-[250px]"><img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src={imageFor("crossbody-set")} alt="Accessories flat lay" /></a><a href="/shop?category=Pants" className="col-span-2 border border-outline-variant/30 bg-surface-container-low p-8 md:p-10 flex flex-col justify-between min-h-[250px]"><div><p className="text-label-caps font-label uppercase text-on-surface-variant mb-3">Editorial Note</p><h3 className="font-headline text-headline-md uppercase mb-4">Tailored utility, softened edges</h3><p className="text-on-surface-variant">Every LEORÉ silhouette balances proportion, function, and texture so the garment stays expressive from day to night.</p></div><span className="text-label-caps font-label uppercase text-tertiary">Explore category →</span></a></div></div></div></section>
-      <section id="journal" className="py-20 md:py-28"><div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 items-center"><div className="md:col-span-5"><p className="text-label-caps font-label uppercase text-tertiary mb-3">Brand Ethos</p><h2 className="font-headline text-headline-lg uppercase tracking-tight mb-6">Quiet confidence over loud trends</h2><p className="text-on-surface-variant mb-8 leading-relaxed">LEORÉ is designed as a modular wardrobe. Neutral palettes, dense fabrics, and architectural pattern cutting let each piece transition across settings.</p><a href="/shop" className="inline-block px-8 py-4 border border-outline font-button text-button uppercase tracking-widest hover:border-tertiary hover:text-tertiary transition-colors">Enter The Archive</a></div><div className="md:col-span-7 grid grid-cols-2 gap-6"><div className="border border-outline-variant/30 overflow-hidden min-h-[240px]"><img className="w-full h-full object-cover" src={imageFor("boxy-pullover")} alt="Boxy pullover detail" /></div><div className="border border-outline-variant/30 overflow-hidden min-h-[240px]"><img className="w-full h-full object-cover" src={imageFor("cargo-pants")} alt="Cargo pants detail" /></div></div></div></section>
-    </main><Newsletter />
+    <div className="announcement">CONSIDERED ESSENTIALS <b>✳</b> MADE FOR EVERYDAY MOVEMENT</div>
+    <header className="header">
+      <button className="hamb" onClick={() => setMenu(!menu)} aria-label="Toggle menu">{menu ? "×" : "☰"}</button>
+      <a className="logo" href="#/">LEORÉ<span>®</span></a>
+      <nav className="nav"><a href="#/shop">Shop</a><a href="#/shop?sort=new">New arrivals</a><a href="#/about">Our story</a><a href="#/faq">Help</a></nav>
+      <div className="actions"><button aria-label="Search" onClick={search}>⌕</button><button aria-label="Shopping bag" onClick={cart}>Bag <b>{count}</b></button></div>
+    </header>
+    {menu && <nav className="mobile-nav">{[["Shop","shop"],["New arrivals","shop?sort=new"],["Our story","about"],["FAQs","faq"],["Shipping & returns","shipping"],["Contact","contact"]].map(([t,p])=><a key={t} href={`#/${p}`} onClick={()=>setMenu(false)}>{t}<I/></a>)}</nav>}
   </>;
 }
 
-function Shop({ openQuickView }) {
-  const params = new URLSearchParams(window.location.search);
-  const [category, setCategory] = useState(params.get("category") || "All");
-  const [sort, setSort] = useState("featured");
-  const products = useMemo(() => { const result = category === "All" ? [...PRODUCTS] : PRODUCTS.filter((product) => product.category === category); if (sort === "price-asc") result.sort((a, b) => a.price - b.price); if (sort === "price-desc") result.sort((a, b) => b.price - a.price); return result; }, [category, sort]);
-  return <main className="pt-20"><section className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto pt-16 pb-10 border-b border-outline-variant/30"><span className="text-label-caps font-label text-tertiary mb-3 block uppercase">Full Range</span><h1 className="font-headline text-headline-lg md:text-display-lg-mobile text-on-background uppercase tracking-tight">Collections</h1></section><section className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto py-8 border-b border-outline-variant/30 flex flex-col md:flex-row gap-6 md:items-center md:justify-between"><div className="flex gap-8 overflow-x-auto" role="tablist" aria-label="Filter by category">{categories.map((item) => <button type="button" key={item} onClick={() => setCategory(item)} className={`filter-tab ${category === item ? "active" : ""}`} aria-selected={category === item}>{item}</button>)}</div><div className="flex items-center gap-4"><span className="text-label-caps font-label text-on-surface-variant uppercase">{products.length} {products.length === 1 ? "item" : "items"}</span><label className="sr-only" htmlFor="sort-select">Sort products</label><select id="sort-select" value={sort} onChange={(event) => setSort(event.target.value)} className="bg-transparent border border-outline-variant text-label-caps font-label uppercase py-2 px-3 text-on-background focus:ring-0 focus:border-primary"><option value="featured">Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option></select></div></section><section className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto py-section-gap"><div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">{products.map((product) => <ProductCard key={product.id} product={product} openQuickView={openQuickView} />)}</div></section><Newsletter /></main>;
+function Footer() {
+  return <footer className="footer"><div className="footer-grid"><div><a className="logo" href="#/">LEORÉ<span>®</span></a><p>Considered essentials.<br/>Made to move with you.</p><small>THE EVERYDAY UNIFORM.</small></div><div><h4>EXPLORE</h4><a href="#/shop">Shop all</a><a href="#/about">Our story</a><a href="#/shop?category=Hoodies">Hoodies</a></div><div><h4>NEED HELP?</h4><a href="#/faq">FAQs</a><a href="#/shipping">Shipping & returns</a><a href="#/contact">Contact us</a></div><div><h4>THE LEORÉ LETTER</h4><p>New drops and notes from our world.</p><Newsletter compact/></div></div><div className="footer-bottom"><span>© 2026 LEORÉ. ALL RIGHTS RESERVED.</span><span>DESIGNED WITH INTENTION.</span></div></footer>;
 }
 
-function SearchOverlay({ openQuickView, close }) {
-  const [query, setQuery] = useState("");
-  const matches = query.trim() ? PRODUCTS.filter((product) => `${product.name} ${product.category}`.toLowerCase().includes(query.toLowerCase())) : [];
-  return <div id="search-overlay" className="open" role="dialog" aria-modal="true" aria-label="Search"><div className="max-w-3xl mx-auto px-margin-mobile pt-24 md:pt-32"><div className="flex justify-between items-center mb-10"><span className="text-label-caps font-label text-on-surface-variant uppercase">Search</span><button type="button" onClick={close} aria-label="Close search" className="text-on-background"><span className="material-symbols-outlined">close</span></button></div><div className="flex items-center border-b border-outline-variant pb-4 mb-8"><span className="material-symbols-outlined text-on-surface-variant mr-4">search</span><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} type="text" placeholder="SEARCH PRODUCTS, CATEGORIES..." className="text-headline-md font-headline uppercase" /></div>{query && !matches.length ? <p className="text-on-surface-variant py-8">No results for “{query}”.</p> : matches.map((product) => <button type="button" key={product.id} onClick={() => { close(); openQuickView(product.id); }} className="search-result-row w-full text-left"><img src={resolveAsset(product.img)} alt={product.imgAlt} /><span className="flex-grow"><span className="block font-headline text-[16px] text-on-background">{product.name}</span><span className="block text-label-caps font-label text-on-surface-variant uppercase mt-1">{product.category}</span></span><span className="text-label-caps font-label">{money.format(product.price)}</span></button>)}</div></div>;
+function Newsletter({ compact = false }) {
+  const [email,setEmail] = useState(""); const [done,setDone] = useState(false);
+  return done ? <p className="success">Thanks for joining. (Demo only — not sent.)</p> : <form className={`newsletter ${compact?"compact":""}`} onSubmit={e=>{e.preventDefault();setDone(true);}}><input aria-label="Email address" type="email" required placeholder="Your email address" value={email} onChange={e=>setEmail(e.target.value)}/><button aria-label="Subscribe">→</button></form>;
 }
 
-function CartDrawer({ cart, updateQuantity, removeLine, close, checkout }) {
-  const subtotal = cart.reduce((total, line) => { const product = getProduct(line.id); return total + (product ? product.price * line.qty : 0); }, 0);
-  return <div id="cart-drawer" className="open" role="dialog" aria-modal="true" aria-label="Shopping bag"><div className="flex justify-between items-center h-20 px-8 border-b border-outline-variant/30 flex-shrink-0"><span className="text-label-caps font-label uppercase text-on-background">Your Bag</span><button type="button" onClick={close} aria-label="Close bag" className="text-on-background"><span className="material-symbols-outlined">close</span></button></div><div className="flex-grow overflow-y-auto px-8">{!cart.length ? <p className="text-on-surface-variant font-body-md py-12">Your bag is empty. <a href="/shop" className="underline hover:text-tertiary">Browse collections →</a></p> : cart.map((line, index) => { const product = getProduct(line.id); return product && <div className="cart-line" key={`${line.id}-${line.size}`}><img src={resolveAsset(product.img)} alt={product.imgAlt} /><div className="flex flex-col justify-between"><div><p className="font-headline text-[15px] leading-tight text-on-background">{product.name}</p><p className="text-label-caps font-label text-on-surface-variant uppercase mt-1">Size {line.size}</p></div><div className="qty-stepper" role="group" aria-label={`Quantity for ${product.name}`}><button type="button" onClick={() => updateQuantity(index, -1)} aria-label="Decrease quantity">-</button><span>{line.qty}</span><button type="button" onClick={() => updateQuantity(index, 1)} aria-label="Increase quantity">+</button></div></div><div className="flex flex-col items-end justify-between"><button type="button" onClick={() => removeLine(index)} aria-label={`Remove ${product.name}`} className="text-on-surface-variant hover:text-tertiary"><span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span></button><span className="text-label-caps font-label">{money.format(product.price * line.qty)}</span></div></div>; })}</div><div className="px-8 py-8 border-t border-outline-variant/30 flex-shrink-0"><div className="flex justify-between items-center mb-6"><span className="text-label-caps font-label uppercase text-on-surface-variant">Subtotal</span><span className="text-headline-md font-headline text-on-background">{money.format(subtotal)}</span></div><button type="button" onClick={checkout} className="w-full py-5 bg-on-background text-background font-button text-button uppercase tracking-widest shadow-block hover:translate-x-1 hover:translate-y-1 transition-transform">Checkout</button><p className="text-label-caps font-label text-on-surface-variant/60 mt-4 text-center">Demo store - no payment is processed</p></div></div>;
+function Card({ p, quick }) {
+  return <article className="card"><div className="card-image"><a href={`#/product/${p.id}`}><img src={img(p.image)} alt={p.imageAlt || p.name} loading="lazy"/></a>{p.tag && <span className="tag">{p.tag}</span>}<button className="quick" onClick={()=>quick(p)}>{p.inStock?"QUICK ADD +":"VIEW DETAILS"}</button></div><div className="card-meta"><div><a className="pname" href={`#/product/${p.id}`}>{p.name}</a><small>{p.category}</small></div><span>{fmt.format(p.price)}</span></div></article>;
+}
+function Grid({ items, quick }) { return items.length ? <div className="grid">{items.map(p=><Card key={p.id} p={p} quick={quick}/>)}</div> : <div className="empty"><h3>No pieces found.</h3><button className="btn outline" onClick={()=>go("shop")}>Explore all products →</button></div>; }
+
+function Home({ quick }) {
+  const featured = products.filter(p=>p.inStock).slice(0,4);
+  return <main>
+    <section className="hero"><img src={img(catalog.heroImage)} alt="LEORÉ campaign editorial" /><div className="hero-overlay"/><div className="hero-copy"><p className="eyebrow gold">THE EVERYDAY UNIFORM — 001</p><h1>Less noise.<br/><em>More presence.</em></h1><p>Considered silhouettes. Tactile fabrics. Essentials designed to become part of your everyday.</p><div className="hero-buttons"><a className="btn light" href="#/shop">SHOP THE COLLECTION <I/></a><a className="underlink" href="#/about">Discover LEORÉ</a></div></div><span className="hero-index">01 / THE NEW UNIFORM</span></section>
+    <div className="ticker">BUILT FOR THE EVERYDAY <b>✳</b> CONSIDERED BY DESIGN <b>✳</b> MADE TO MOVE WITH YOU <b>✳</b></div>
+    <section className="section"><div className="section-title"><div><p className="eyebrow">THE ROTATION STARTS HERE</p><h2>Everyday, <em>elevated.</em></h2></div><a className="underlink" href="#/shop">SHOP ALL →</a></div><Grid items={featured} quick={quick}/></section>
+    <section className="story"><div className="story-photo"><img src={img(product("signature-hoodie")?.image)} alt="Signature hoodie"/></div><div className="story-copy"><p className="eyebrow gold">A STUDY IN SIMPLICITY</p><h2>Good design<br/>doesn't ask<br/><em>for attention.</em></h2><p>It earns a place in your everyday. LEORÉ is built around thoughtful proportions, tactile materials and comfort you'll return to.</p><a className="btn light" href="#/about">OUR APPROACH <I/></a></div></section>
+    <section className="section"><div className="section-title"><div><p className="eyebrow">FIND YOUR FORM</p><h2>Made for <em>your rotation.</em></h2></div><p className="muted">The pieces you'll reach for, again and again.</p></div><div className="tiles">{[["Hoodies","signature-hoodie","Hoodies"],["Outerwear","trench-coat","Outerwear"],["Bottoms","cargo-pants","Pants"]].map(([title,id,cat],i)=><a className="tile" href={`#/shop?category=${cat}`} key={id}><img src={img(product(id)?.image)} alt={title}/><span>0{i+1} / {title.toUpperCase()}</span><b>{["Comfort, considered","Layer with intent","Grounded essentials"][i]} <I/></b></a>)}</div></section>
+    <section className="newsletter-panel"><p className="eyebrow gold">A LITTLE SOMETHING, OCCASIONALLY</p><h2>Stay in the <em>know.</em></h2><p>First looks, new drops and notes from the LEORÉ world.</p><Newsletter/></section>
+  </main>;
 }
 
-function QuickView({ product, close, addToCart }) {
-  const [size, setSize] = useState("");
-  const [warning, setWarning] = useState(false);
-  if (!product) return null;
-  const add = () => { if (!size) { setWarning(true); return; } addToCart(product.id, size); close(); };
-  return <div id="quickview-modal" className="open" role="dialog" aria-modal="true" aria-label="Product quick view"><div onClick={close} className="absolute inset-0" /><div id="quickview-panel" className="relative"><div className="grid grid-cols-1 md:grid-cols-2"><div className="aspect-[4/5] md:aspect-auto bg-surface-container-low overflow-hidden"><img src={resolveAsset(product.img)} alt={product.imgAlt} className="w-full h-full object-cover" /></div><div className="p-8 md:p-10 flex flex-col"><div className="flex justify-between items-start mb-6"><span className="text-label-caps font-label text-tertiary uppercase">{product.tag}</span><button type="button" onClick={close} aria-label="Close quick view" className="text-on-surface-variant"><span className="material-symbols-outlined">close</span></button></div><h3 className="font-headline text-headline-md md:text-headline-lg uppercase mb-3 text-on-background">{product.name}</h3><p className="text-label-caps font-label mb-6">{money.format(product.price)}</p><p className="text-on-surface-variant font-body-md mb-8 leading-relaxed">{product.detail}</p>{product.inStock ? <><div className="mb-8"><span className="text-label-caps font-label uppercase text-on-surface-variant block mb-3">Size</span><div className="grid grid-cols-5 gap-2">{product.sizes.map((item) => <button type="button" key={item} onClick={() => { setSize(item); setWarning(false); }} className={`size-swatch ${size === item ? "selected" : ""}`}>{item}</button>)}</div>{warning && <p className="text-label-caps font-label text-tertiary mt-2">Select a size to continue</p>}</div><button type="button" onClick={add} className="w-full py-5 bg-on-background text-background font-button text-button uppercase tracking-widest shadow-block hover:translate-x-1 hover:translate-y-1 transition-transform mt-auto">Add to Bag</button></> : <div className="mt-auto"><p className="text-label-caps font-label text-outline uppercase border border-outline-variant px-4 py-3 inline-block mb-4">Sold Out</p><p className="text-on-surface-variant font-body-md">This piece has sold through. Join the waitlist for restock notice on future drops.</p></div>}</div></div></div></div>;
+function Shop({ quick, params }) {
+  const [cat,setCat] = useState(params.get("category")||"All");
+  const [sort,setSort] = useState(params.get("sort")||"featured");
+  const cats = ["All",...new Set(products.map(p=>p.category))];
+  const items = useMemo(()=>{let a=cat==="All"?[...products]:products.filter(p=>p.category===cat);if(sort==="price-low")a.sort((x,y)=>x.price-y.price);if(sort==="price-high")a.sort((x,y)=>y.price-x.price);if(sort==="name")a.sort((x,y)=>x.name.localeCompare(y.name));if(sort==="new")a.reverse();return a;},[cat,sort]);
+  return <main><div className="page-intro"><p className="eyebrow">THE LEORÉ COLLECTION</p><h1>Pieces for <em>every day.</em></h1><p>Thoughtful essentials. Distinct by design.</p></div><div className="toolbar"><div className="filters">{cats.map(c=><button key={c} className={cat===c?"active":""} onClick={()=>setCat(c)}>{c}</button>)}</div><label>{items.length} PIECES <select value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="new">New arrivals</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label></div><section className="section shop-grid"><Grid items={items} quick={quick}/></section></main>;
 }
 
-function MobileNav({ close }) {
-  return <div id="mobile-nav" className="open" role="dialog" aria-modal="true" aria-label="Mobile navigation"><div className="flex justify-between items-center h-20 px-margin-mobile border-b border-outline-variant/30"><span className="text-headline-md font-headline font-bold tracking-tighter text-on-background">LEORÉ</span><button type="button" onClick={close} aria-label="Close menu" className="text-on-background"><span className="material-symbols-outlined">close</span></button></div><nav className="flex flex-col gap-2 px-margin-mobile py-10"><a href="/shop" className="py-4 border-b border-outline-variant/30 text-headline-md font-headline uppercase text-on-background">Collections</a><a href="/#lookbook" onClick={close} className="py-4 border-b border-outline-variant/30 text-headline-md font-headline uppercase text-on-background">Lookbook</a><a href="/#journal" onClick={close} className="py-4 border-b border-outline-variant/30 text-headline-md font-headline uppercase text-on-background">Journal</a></nav></div>;
+function ProductPage({ id, add, quick }) {
+  const p = product(id)||products[0]; const [size,setSize]=useState(""); const [guide,setGuide]=useState(false); const [notice,setNotice]=useState("");
+  const related=products.filter(x=>x.id!==p.id&&x.category===p.category).slice(0,3);
+  return <main><div className="crumb"><a href="#/">Home</a> / <a href="#/shop">Shop</a> / {p.name}</div><section className="detail"><div><div className="detail-image"><img src={img(p.image)} alt={p.imageAlt||p.name}/><span>LEORÉ / OBJECT 001</span></div><p className="image-caption">Considered fabric. Thoughtful construction. Designed to live in.</p></div><div className="detail-copy"><p className="eyebrow gold">{p.tag||"THE COLLECTION"}</p><h1>{p.name}</h1><p className="detail-price">{fmt.format(p.price)} <small>INCL. OF TAXES</small></p><p className="muted description">{p.details}</p><hr/><div className="size-row"><span className="eyebrow">SELECT SIZE</span><button className="underlink" onClick={()=>setGuide(!guide)}>SIZE GUIDE ↗</button></div>{guide&&<div className="guide"><b>Find your fit</b><p>Choose your usual size for a regular fit. Size guidance is illustrative; confirm garment measurements before launch.</p></div>}<div className="sizes">{(p.sizes||["S","M","L","XL"]).map(s=><button key={s} className={size===s?"selected":""} onClick={()=>{setSize(s);setNotice("");}}>{s}</button>)}</div><button disabled={!p.inStock} className="btn gold-btn wide" onClick={()=>{if(!size){setNotice("Please select a size first.");return;}add(p.id,size);setNotice("Added to your bag.");}}>{p.inStock?"ADD TO BAG":"CURRENTLY UNAVAILABLE"} <I/></button>{notice&&<p className="success">{notice}</p>}<div className="delivery"><p>↗ Shipping & delivery information <a href="#/shipping">Learn more</a></p><details><summary>PRODUCT DETAILS <I>⌄</I></summary><p>{p.details}</p></details><details><summary>SHIPPING & RETURNS <I>⌄</I></summary><p>Read the <a href="#/shipping">shipping and returns information</a>. Final policy details must be confirmed before launch.</p></details></div></div></section>{related.length>0&&<section className="section"><div className="section-title"><div><p className="eyebrow">KEEP EXPLORING</p><h2>Goes well <em>with.</em></h2></div><a className="underlink" href="#/shop">VIEW ALL →</a></div><Grid items={related} quick={quick}/></section>}</main>;
+}
+
+function CartLines({ cart, qty, remove, close }) {
+  const subtotal=cart.reduce((s,l)=>s+(product(l.id)?.price||0)*l.qty,0);
+  if(!cart.length)return <div className="empty bag-empty"><div className="bag-icon">⌑</div><h3>Your bag is taking a breather.</h3><p>Find something you'll want to live in.</p><button className="btn gold-btn" onClick={()=>{close?.();go("shop");}}>EXPLORE THE COLLECTION →</button></div>;
+  return <><div className="cart-lines">{cart.map(l=>{const p=product(l.id);if(!p)return null;return <div className="cart-line" key={l.id+l.size}><a href={`#/product/${p.id}`} onClick={close}><img src={img(p.image)} alt={p.name}/></a><div><a className="pname" href={`#/product/${p.id}`} onClick={close}>{p.name}</a><p>Size: {l.size}</p><div className="qty"><button onClick={()=>qty(l.id,l.size,-1)}>-</button><span>{l.qty}</span><button onClick={()=>qty(l.id,l.size,1)}>+</button></div></div><div className="line-end"><span>{fmt.format(p.price*l.qty)}</span><button onClick={()=>remove(l.id,l.size)}>Remove</button></div></div>;})}</div><div className="cart-summary"><div><span>Subtotal</span><strong>{fmt.format(subtotal)}</strong></div><p>Shipping and applicable discounts are calculated at checkout.</p>{close && <button className="btn outline wide view-bag" onClick={()=>{close();go("cart");}}>VIEW BAG DETAILS <I/></button>}<button className="btn gold-btn wide" onClick={()=>go("checkout")}>CONTINUE TO CHECKOUT <I/></button><small>Prototype only — payments are not connected.</small></div></>;
+}
+function CartPage({ cart, qty, remove }) { return <main><div className="page-intro"><p className="eyebrow">ALMOST YOURS</p><h1>Your <em>bag.</em></h1><p>Take another look at your selection.</p></div><div className="cart-page"><CartLines cart={cart} qty={qty} remove={remove}/><a className="underlink" href="#/shop">← CONTINUE SHOPPING</a></div></main>; }
+
+function Drawer({ cart, qty, remove, close }) { return <div className="scrim" onMouseDown={e=>{if(e.target===e.currentTarget)close();}}><aside className="drawer"><div className="drawer-head"><div><p className="eyebrow">YOUR SELECTION</p><h2>Your bag <small>({cart.reduce((n,l)=>n+l.qty,0)})</small></h2></div><button onClick={close}>×</button></div><CartLines cart={cart} qty={qty} remove={remove} close={close}/></aside></div>; }
+
+function Search({ close, quick }) {
+  const [q,setQ]=useState("");const matches=q.trim()?products.filter(p=>(p.name+" "+p.category+" "+p.details).toLowerCase().includes(q.toLowerCase())):products.slice(0,4);
+  return <div className="scrim search-scrim" onMouseDown={e=>{if(e.target===e.currentTarget)close();}}><section className="search-box"><div className="drawer-head"><p className="eyebrow">FIND YOUR EVERYDAY</p><button onClick={close}>×</button></div><input autoFocus placeholder="Search products, categories..." value={q} onChange={e=>setQ(e.target.value)}/><p className="eyebrow">{q?`${matches.length} RESULTS`:"A FEW PLACES TO START"}</p>{matches.length?matches.map(p=><div className="search-line" key={p.id}><a href={`#/product/${p.id}`} onClick={close}><img src={img(p.image)} alt={p.name}/></a><div><a className="pname" href={`#/product/${p.id}`} onClick={close}>{p.name}</a><p>{p.category} · {fmt.format(p.price)}</p></div><button className="underlink" onClick={()=>{close();quick(p);}}>QUICK ADD</button></div>):<p className="muted">No matches. Try another search.</p>}</section></div>;
+}
+function Quick({ p, close, add }) {
+  const [size,setSize]=useState("");
+  return <div className="scrim" onMouseDown={e=>{if(e.target===e.currentTarget)close();}}><section className="quick-box"><button className="x" onClick={close}>×</button><img src={img(p.image)} alt={p.name}/><div><p className="eyebrow gold">{p.tag}</p><h2>{p.name}</h2><p>{fmt.format(p.price)}</p><p className="muted">{p.details}</p><span className="eyebrow">SELECT SIZE</span><div className="sizes">{(p.sizes||[]).map(s=><button key={s} className={size===s?"selected":""} onClick={()=>setSize(s)}>{s}</button>)}</div><button disabled={!p.inStock} className="btn gold-btn wide" onClick={()=>{if(size){add(p.id,size);close();}}}>{!p.inStock?"SOLD OUT":size?"ADD TO BAG":"SELECT A SIZE →"}</button><a className="underlink" href={`#/product/${p.id}`} onClick={close}>VIEW PRODUCT DETAILS →</a></div></section></div>;
+}
+
+const faqs=[
+["How do I choose the right size?","Use the sizes listed on each product page. A garment-specific size guide can be added once measurements are confirmed."],
+["How can I track my order?","Order tracking will be available once the live order and shipping integrations are connected. This prototype does not create real orders."],
+["What is the shipping timeline?","Shipping rates, pin-code coverage and delivery estimates must be confirmed in the final store policy before checkout is enabled."],
+["Can I return or exchange an item?","Return windows and eligibility depend on the final published policy. Please confirm the policy before launch."],
+["Are payments enabled?","No. This prototype does not collect payments or create confirmed orders."],
+["How do I contact LEORÉ?","Use the contact page to preview a message. The form does not send messages until a support service is connected."]
+];
+function Info({ page }) {
+  const [sent,setSent]=useState(false);
+  if(page==="about")return <main><section className="editorial"><p className="eyebrow gold">THE LEORÉ POINT OF VIEW</p><h1>Quiet confidence.<br/><em>Everyday form.</em></h1><p>Pieces you wear most should be the ones you think about least — considered in every detail, effortless in every moment.</p></section><section className="about"><img src={img(catalog.heroImage)} alt="LEORÉ campaign"/><div><p className="eyebrow">OUR APPROACH</p><h2>Less, but <em>better.</em></h2><p>LEORÉ is a study in modern essentials: balanced silhouettes, tactile materials and a restrained point of view. We design around the everyday, where comfort and character should never compete.</p><p>Intentional design. Everyday confidence. No unnecessary noise.</p><a className="btn gold-btn" href="#/shop">EXPLORE THE COLLECTION →</a></div></section><section className="manifesto"><p className="eyebrow gold">OUR MANIFESTO</p><h2>Wear what feels <em>like you.</em></h2></section></main>;
+  if(page==="faq")return <main><div className="page-intro"><p className="eyebrow">HERE TO HELP</p><h1>Frequently <em>asked.</em></h1><p>Useful answers for your LEORÉ journey.</p></div><section className="info-layout"><div><p className="eyebrow">SUPPORT / 001</p><h2>Good to <em>know.</em></h2><p className="muted">Can't find what you're looking for?</p><a className="underlink" href="#/contact">CONTACT US →</a></div><div className="faqs">{faqs.map(([q,a])=><details key={q}><summary>{q}<I>＋</I></summary><p>{a}</p></details>)}</div></section></main>;
+  if(page==="shipping")return <main><div className="page-intro"><p className="eyebrow">THE PRACTICAL DETAILS</p><h1>Shipping <em>& returns.</em></h1><p>Clear information, without the fine-print feeling.</p></div><section className="policies">{[["01","Shipping","Rates, delivery estimates, serviceable pin codes and dispatch timelines will be confirmed before launch. This prototype does not create shipments."],["02","Returns & exchanges","Return windows, item eligibility and exchange availability must be set in the final policy. No return request is submitted here."],["03","Need a hand?","Have a question about a product? Our contact page is ready for your message."]].map(([n,t,d])=><article key={n}><span>{n}</span><h2>{t}</h2><p>{d}</p>{n==="03"&&<a className="underlink" href="#/contact">CONTACT LEORÉ →</a>}</article>)}</section><p className="disclaimer">Prototype policy content — confirm the final commercial terms before publishing to customers.</p></main>;
+  if(page==="contact")return <main><div className="page-intro"><p className="eyebrow">WE'RE LISTENING</p><h1>Let's <em>talk.</em></h1><p>Questions, feedback or just want to say hello?</p></div><section className="contact"><div><p className="eyebrow gold">CONTACT / 001</p><h2>Every good conversation <em>starts somewhere.</em></h2><p className="muted">This demo form validates locally. Add your official support email and connect a form service before launch.</p></div>{sent?<div className="confirm"><h2>Thank you.</h2><p>Your message passed local validation, but was not sent or stored.</p><button className="btn outline" onClick={()=>setSent(false)}>WRITE ANOTHER</button></div>:<form onSubmit={e=>{e.preventDefault();setSent(true);}}><label>Your name<input required placeholder="Name"/></label><label>Email address<input required type="email" placeholder="you@example.com"/></label><label>What's this about?<select><option>Product enquiry</option><option>Order support</option><option>Shipping & returns</option><option>Collaboration</option><option>Other</option></select></label><label>Your message<textarea required rows="5" placeholder="Tell us a little more..."/></label><button className="btn gold-btn wide">PREVIEW MESSAGE →</button></form>}</section></main>;
+  return <main><div className="page-intro"><p className="eyebrow">CHECKOUT PREVIEW</p><h1>One step <em>closer.</em></h1><p>This static prototype does not take payments or create orders.</p></div><section className="checkout-placeholder"><h2>Checkout isn't connected yet.</h2><p className="muted">Payments, customer details, order records, invoices and shipping integrations will be added in a later phase.</p><button className="btn gold-btn" onClick={()=>go("cart")}>RETURN TO YOUR BAG →</button></section></main>;
 }
 
 export default function App() {
-  const [panel, setPanel] = useState(null);
-  const [quickProduct, setQuickProduct] = useState(null);
-  const [cart, setCart] = useState(() => { try { return JSON.parse(localStorage.getItem("leore_cart")) || []; } catch { return []; } });
-  const [toast, setToast] = useState("");
-  const [currentUrl, setCurrentUrl] = useState(() => window.location.href);
-  const cartCount = cart.reduce((total, line) => total + line.qty, 0);
-  const currentLocation = new URL(currentUrl);
-  const isShop = currentLocation.pathname === "/shop" || currentLocation.pathname === "/shop.html" || currentLocation.searchParams.get("page") === "shop";
-  const showToast = (message) => { setToast(message); window.setTimeout(() => setToast(""), 2600); };
-  useEffect(() => { localStorage.setItem("leore_cart", JSON.stringify(cart)); }, [cart]);
-  useEffect(() => {
-    const handleRouteClick = (event) => {
-      const link = event.target.closest('a[href^="/shop"]');
-      if (!link) return;
-      event.preventDefault();
-      const nextUrl = new URL(link.href, window.location.origin);
-      nextUrl.searchParams.set("page", "shop");
-      window.history.pushState({}, "", nextUrl);
-      setCurrentUrl(nextUrl.href);
-    };
-    const handlePopState = () => setCurrentUrl(window.location.href);
-    document.addEventListener("click", handleRouteClick);
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      document.removeEventListener("click", handleRouteClick);
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-  useEffect(() => {
-    const updateProgress = () => {
-      const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = documentHeight > 0 ? (window.scrollY / documentHeight) * 100 : 0;
-      const progressBar = document.getElementById("scroll-progress");
-      if (progressBar) progressBar.style.width = `${progress}%`;
-    };
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    updateProgress();
-    return () => window.removeEventListener("scroll", updateProgress);
-  }, [isShop]);
-  useEffect(() => { document.documentElement.style.overflow = panel || quickProduct ? "hidden" : ""; return () => { document.documentElement.style.overflow = ""; }; }, [panel, quickProduct]);
-  useEffect(() => { const closeOnEscape = (event) => { if (event.key === "Escape") { setPanel(null); setQuickProduct(null); } }; window.addEventListener("keydown", closeOnEscape); return () => window.removeEventListener("keydown", closeOnEscape); }, []);
-  const addToCart = (id, size) => { setCart((current) => { const existing = current.find((line) => line.id === id && line.size === size); return existing ? current.map((line) => line === existing ? { ...line, qty: line.qty + 1 } : line) : [...current, { id, size, qty: 1 }]; }); const product = getProduct(id); showToast(`Added to bag - ${product.name} (${size})`); setPanel("cart"); };
-  const updateQuantity = (index, delta) => setCart((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, qty: line.qty + delta } : line).filter((line) => line.qty > 0));
-  const removeLine = (index) => setCart((current) => current.filter((_, lineIndex) => lineIndex !== index));
-  const openQuickView = (id) => { setQuickProduct(getProduct(id)); setPanel(null); };
-  const closeAll = () => { setPanel(null); setQuickProduct(null); };
-  return <><div id="scroll-progress" /><Header cartCount={cartCount} openPanel={setPanel} />{isShop ? <Shop openQuickView={openQuickView} /> : <Home openQuickView={openQuickView} />}<Footer /><div className={`scrim ${panel || quickProduct ? "open" : ""}`} onClick={closeAll} />{panel === "search" && <SearchOverlay openQuickView={openQuickView} close={() => setPanel(null)} />}{panel === "cart" && <CartDrawer cart={cart} updateQuantity={updateQuantity} removeLine={removeLine} close={() => setPanel(null)} checkout={() => cart.length && showToast("Demo checkout - no payment processed")} />}{panel === "mobile" && <MobileNav close={() => setPanel(null)} />}{quickProduct && <QuickView product={quickProduct} close={() => setQuickProduct(null)} addToCart={addToCart} />}<div id="toast-stack" aria-live="polite">{toast && <div className="toast show">{toast}</div>}</div></>;
+  const [r,setR]=useState(route);
+  const [cart,setCart]=useState(()=>{try{return JSON.parse(localStorage.getItem("leore_cart_v2"))||[];}catch{return [];}});
+  const [searching,setSearching]=useState(false),[drawer,setDrawer]=useState(false),[quickP,setQuickP]=useState(null),[toast,setToast]=useState("");
+  useEffect(()=>{const sync=()=>{setR(route());setDrawer(false);setQuickP(null);setSearching(false);};window.addEventListener("hashchange",sync);return()=>window.removeEventListener("hashchange",sync);},[]);
+  useEffect(()=>{try{localStorage.setItem("leore_cart_v2",JSON.stringify(cart));}catch{}},[cart]);
+  useEffect(()=>{const esc=e=>{if(e.key==="Escape"){setSearching(false);setDrawer(false);setQuickP(null);}};window.addEventListener("keydown",esc);return()=>window.removeEventListener("keydown",esc);},[]);
+  useEffect(()=>{document.body.style.overflow=searching||drawer||quickP?"hidden":"";return()=>{document.body.style.overflow="";};},[searching,drawer,quickP]);
+  const add=(id,size)=>{setCart(c=>{const old=c.find(x=>x.id===id&&x.size===size);return old?c.map(x=>x===old?{...x,qty:x.qty+1}:x):[...c,{id,size,qty:1}];});setToast("Added to your bag");setTimeout(()=>setToast(""),2200);};
+  const qty=(id,size,d)=>setCart(c=>c.map(x=>x.id===id&&x.size===size?{...x,qty:x.qty+d}:x).filter(x=>x.qty>0));
+  const remove=(id,size)=>setCart(c=>c.filter(x=>!(x.id===id&&x.size===size)));
+  const quick=p=>p.inStock?setQuickP(p):go(`product/${p.id}`);
+  let view;
+  if(r.page==="shop")view=<Shop quick={quick} params={r.params}/>;
+  else if(r.page==="product")view=<ProductPage id={r.id} add={add} quick={quick}/>;
+  else if(r.page==="cart")view=<CartPage cart={cart} qty={qty} remove={remove}/>;
+  else if(["about","faq","shipping","contact","checkout"].includes(r.page))view=<Info page={r.page}/>;
+  else view=<Home quick={quick}/>;
+  return <><Header count={cart.reduce((n,x)=>n+x.qty,0)} search={()=>setSearching(true)} cart={()=>setDrawer(true)}/>{view}<Footer/>{drawer&&<Drawer cart={cart} qty={qty} remove={remove} close={()=>setDrawer(false)}/ >}{searching&&<Search close={()=>setSearching(false)} quick={quick}/ >}{quickP&&<Quick p={quickP} close={()=>setQuickP(null)} add={add}/ >}{toast&&<div className="toast">{toast}</div>}</>;
 }
