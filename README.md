@@ -29,6 +29,31 @@ Then visit the URL printed by Vite, usually `http://localhost:5173`.
 Create a production build with `npm run build`. The generated `dist/` folder
 can be deployed to GitHub Pages or another static host.
 
+## WhatsApp contact and ordering
+
+Set `VITE_WHATSAPP_NUMBER` in a local `.env` file to enable WhatsApp links. Copy
+`.env.example` as a starting point and enter Leore's business number in
+international format using digits only, including the country code (for example,
+`919876543210`; do not include `+`, spaces, or punctuation). Restart Vite after
+changing the setting. Do not add a real business number to source control.
+
+The footer's **Contact on WhatsApp** link opens a prefilled general enquiry in
+WhatsApp. Product quick view offers **Order on WhatsApp** for in-stock products;
+choose a size and quantity first. The message includes the selected product,
+formatted INR price, size, and quantity. The bag also has an optional WhatsApp
+order action that summarizes its items and total. Product color selection is
+not currently part of the catalog, so no color is included.
+
+WhatsApp opens with a draft only: the customer must press **Send**, and the
+request remains pending until Leore confirms availability and delivery details.
+This does not create a persisted order, reserve stock, or process payment.
+When the number is unset or invalid, ordering links are disabled; in Vite
+development mode the storefront displays a configuration warning.
+
+Run `npm test` to test number validation, Click-to-Chat URL encoding, contact
+and order messages, and cart totals. Check the product quick view and cart at a
+narrow mobile viewport with `npm run dev` to verify responsive behavior.
+
 ## What's interactive
 
 - **Shopping bag** — add to bag from the hero product or any product card,
