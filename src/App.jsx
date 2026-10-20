@@ -34,7 +34,7 @@ function Header({ count, search, cart }) {
       <button className="hamb" onClick={() => setMenu(!menu)} aria-label="Toggle menu">{menu ? "×" : "☰"}</button>
       <a className="logo" href="#/">LEORÉ<span>®</span></a>
       <nav className="nav"><a href="#/shop">Shop</a><a href="#/shop?sort=new">New arrivals</a><a href="#/about">Our story</a><a href="#/faq">Help</a></nav>
-      <div className="actions"><button aria-label="Search" onClick={search}>⌕</button><button aria-label="Shopping bag" onClick={cart}>Bag <b>{count}</b></button></div>
+      <div className="actions"><button className="search-trigger" aria-label="Search products" title="Search products" onClick={search}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><span>Search</span></button><button aria-label="Shopping bag" onClick={cart}>Bag <b>{count}</b></button></div>
     </header>
     {menu && <nav className="mobile-nav">{[["Shop","shop"],["New arrivals","shop?sort=new"],["Our story","about"],["FAQs","faq"],["Shipping & returns","shipping"],["Contact","contact"]].map(([t,p])=><a key={t} href={`#/${p}`} onClick={()=>setMenu(false)}>{t}<I/></a>)}</nav>}
   </>;
