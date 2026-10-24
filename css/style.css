@@ -1,33 +1,114 @@
 /* ==========================================================================
-   LEORE — Custom Styles
-   Tailwind (via CDN, configured inline in each page) handles layout &
-   utility classes straight from DESIGN.md tokens. This file only covers
-   things Tailwind utilities can't: the cart drawer, quick-view modal,
-   toasts, scroll progress bar, and a few brand-specific micro-interactions.
+   LEORÉ — Global Design System
+   Phase 1: shared tokens, typography defaults and reusable primitives.
+   Existing component mechanics below are intentionally preserved.
    ========================================================================== */
+
+:root {
+  /* Brand colors — aligned to DESIGN.md */
+  --leore-bg: #131313;
+  --leore-surface-lowest: #0e0e0e;
+  --leore-surface-low: #1b1c1c;
+  --leore-surface: #1f2020;
+  --leore-surface-high: #2a2a2a;
+  --leore-text: #e4e2e1;
+  --leore-text-muted: #c4c7c7;
+  --leore-text-subtle: #8e9192;
+  --leore-border: #444748;
+  --leore-border-subtle: #262626;
+  --leore-gold: #e9c349;
+  --leore-danger: #ffb4ab;
+
+  /* Type system */
+  --leore-font-display: "Sora", sans-serif;
+  --leore-font-body: "Hanken Grotesk", sans-serif;
+  --leore-font-label: "JetBrains Mono", monospace;
+  --leore-text-xs: 12px;
+  --leore-text-sm: 14px;
+  --leore-text-md: 16px;
+  --leore-text-lg: 18px;
+  --leore-heading-md: 24px;
+  --leore-heading-lg: 32px;
+  --leore-display-mobile: 44px;
+  --leore-display: 72px;
+  --leore-line-body: 1.5;
+  --leore-line-heading: 1.12;
+  --leore-label-tracking: 0.15em;
+
+  /* Layout and spacing */
+  --leore-container-max: 1440px;
+  --leore-gutter-mobile: 20px;
+  --leore-gutter-desktop: 64px;
+  --leore-space-unit: 8px;
+  --leore-section-gap: 120px;
+  --leore-border-width: 1px;
+
+  /* Shape and interaction */
+  --leore-radius: 0px;
+  --leore-control-height: 48px;
+  --leore-transition-fast: 180ms ease;
+  --leore-transition-standard: 300ms cubic-bezier(0.2, 0, 0, 1);
+  --leore-block-shadow: 4px 4px 0 #262626;
+
+  /* Backward-compatible aliases for existing CSS */
+  --bg: var(--leore-bg);
+  --panel: var(--leore-surface-low);
+  --text: var(--leore-text);
+  --muted: var(--leore-text-muted);
+  --gold: var(--leore-gold);
+  --line: var(--leore-border);
+  --max: var(--leore-container-max);
+}
 
 html {
   scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background-color: #131313;
-  color: #e4e2e1;
+  background-color: var(--leore-bg);
+  color: var(--leore-text);
+  font-family: var(--leore-font-body);
+  font-size: var(--leore-text-md);
+  line-height: var(--leore-line-body);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--leore-font-display);
+  line-height: var(--leore-line-heading);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  border-radius: var(--leore-radius);
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
 }
 
 .material-symbols-outlined {
@@ -41,17 +122,18 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid #e9c349;
+  outline: 2px solid var(--leore-gold);
   outline-offset: 2px;
 }
 
 /* ---- Block shadow + hover-lift (from DESIGN.md elevation spec) ---- */
 .shadow-block {
-  box-shadow: 4px 4px 0px 0px #262626;
+  box-shadow: var(--leore-block-shadow);
 }
 .hover-lift {
-  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  transition: transform var(--leore-transition-standard);
 }
 .hover-lift:hover {
   transform: translateY(-4px);
@@ -73,31 +155,27 @@ select:focus-visible,
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d0d0d;
+  background: var(--leore-surface-lowest);
 }
 ::-webkit-scrollbar-thumb {
-  background: #c9c6c5;
+  background: var(--leore-text-muted);
 }
 
-/* ---- Scroll progress bar (Muted Gold, per DESIGN.md "Interactive Progress") ---- */
+/* ---- Scroll progress bar ---- */
 #scroll-progress {
   position: fixed;
   top: 0;
   left: 0;
   height: 2px;
   width: 0%;
-  background: #e9c349;
+  background: var(--leore-gold);
   z-index: 70;
   transition: width 0.1s linear;
 }
 
 @keyframes scroll-hint {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
 /* ==========================================================================
@@ -128,35 +206,33 @@ select:focus-visible,
   height: 100%;
   width: 100%;
   max-width: 440px;
-  background: #131313;
-  border-left: 1px solid #444748;
+  background: var(--leore-bg);
+  border-left: var(--leore-border-width) solid var(--leore-border);
   z-index: 70;
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
-#cart-drawer.open {
-  transform: translateX(0);
-}
+#cart-drawer.open { transform: translateX(0); }
 
 .cart-line {
   display: grid;
   grid-template-columns: 88px 1fr auto;
   gap: 16px;
   padding: 20px 0;
-  border-bottom: 1px solid #262626;
+  border-bottom: var(--leore-border-width) solid var(--leore-border-subtle);
 }
 .cart-line img {
   width: 88px;
   height: 104px;
   object-fit: cover;
-  background: #1b1c1c;
+  background: var(--leore-surface-low);
 }
 .qty-stepper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #444748;
+  border: var(--leore-border-width) solid var(--leore-border);
 }
 .qty-stepper button {
   width: 28px;
@@ -164,16 +240,14 @@ select:focus-visible,
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e4e2e1;
-  transition: background 0.2s ease;
+  color: var(--leore-text);
+  transition: background var(--leore-transition-fast);
 }
-.qty-stepper button:hover {
-  background: #2a2a2a;
-}
+.qty-stepper button:hover { background: var(--leore-surface-high); }
 .qty-stepper span {
   min-width: 28px;
   text-align: center;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--leore-font-label);
   font-size: 13px;
 }
 
@@ -190,16 +264,16 @@ select:focus-visible,
   padding: 20px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--leore-transition-standard);
 }
 #quickview-modal.open {
   opacity: 1;
   pointer-events: auto;
 }
 #quickview-panel {
-  background: #1b1c1c;
-  border: 1px solid #444748;
-  box-shadow: 4px 4px 0px 0px #262626;
+  background: var(--leore-surface-low);
+  border: var(--leore-border-width) solid var(--leore-border);
+  box-shadow: var(--leore-block-shadow);
   max-width: 920px;
   width: 100%;
   max-height: 88vh;
@@ -207,30 +281,28 @@ select:focus-visible,
   transform: translateY(16px);
   transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
 }
-#quickview-modal.open #quickview-panel {
-  transform: translateY(0);
-}
+#quickview-modal.open #quickview-panel { transform: translateY(0); }
 
 .size-swatch {
-  border: 1px solid #444748;
+  border: var(--leore-border-width) solid var(--leore-border);
   padding: 10px 4px;
   text-align: center;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
+  font-family: var(--leore-font-label);
+  font-size: var(--leore-text-xs);
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: #c4c7c7;
+  transition: all var(--leore-transition-fast);
+  color: var(--leore-text-muted);
   background: transparent;
 }
 .size-swatch:hover {
-  border-color: #c9c6c5;
-  color: #e4e2e1;
+  border-color: var(--leore-text-muted);
+  color: var(--leore-text);
 }
 .size-swatch.selected {
-  background: #e4e2e1;
-  border-color: #e4e2e1;
-  color: #131313;
+  background: var(--leore-text);
+  border-color: var(--leore-text);
+  color: var(--leore-bg);
   font-weight: 700;
 }
 
@@ -241,11 +313,11 @@ select:focus-visible,
   position: fixed;
   inset: 0;
   z-index: 71;
-  background: #131313;
+  background: var(--leore-bg);
   opacity: 0;
   pointer-events: none;
   transform: translateY(-12px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--leore-transition-standard), transform var(--leore-transition-standard);
 }
 #search-overlay.open {
   opacity: 1;
@@ -256,29 +328,25 @@ select:focus-visible,
   background: transparent;
   border: none;
   outline: none;
-  color: #e4e2e1;
+  color: var(--leore-text);
   width: 100%;
 }
-#search-input::placeholder {
-  color: #444748;
-}
+#search-input::placeholder { color: var(--leore-border); }
 .search-result-row {
   display: flex;
   align-items: center;
   gap: 20px;
   padding: 16px 0;
-  border-bottom: 1px solid #262626;
+  border-bottom: var(--leore-border-width) solid var(--leore-border-subtle);
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--leore-transition-fast);
 }
-.search-result-row:hover {
-  opacity: 0.7;
-}
+.search-result-row:hover { opacity: 0.7; }
 .search-result-row img {
   width: 56px;
   height: 68px;
   object-fit: cover;
-  background: #1b1c1c;
+  background: var(--leore-surface-low);
 }
 
 /* ==========================================================================
@@ -291,17 +359,15 @@ select:focus-visible,
   height: 100%;
   width: 84%;
   max-width: 360px;
-  background: #0e0e0e;
-  border-left: 1px solid #444748;
+  background: var(--leore-surface-lowest);
+  border-left: var(--leore-border-width) solid var(--leore-border);
   z-index: 70;
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
   display: flex;
   flex-direction: column;
 }
-#mobile-nav.open {
-  transform: translateX(0);
-}
+#mobile-nav.open { transform: translateX(0); }
 
 /* ==========================================================================
    Toasts
@@ -321,19 +387,19 @@ select:focus-visible,
   padding: 0 16px;
 }
 .toast {
-  background: #e4e2e1;
-  color: #131313;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
+  background: var(--leore-text);
+  color: var(--leore-bg);
+  font-family: var(--leore-font-label);
+  font-size: var(--leore-text-xs);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   padding: 14px 18px;
   width: 100%;
   text-align: center;
-  box-shadow: 4px 4px 0px 0px #262626;
+  box-shadow: var(--leore-block-shadow);
   opacity: 0;
   transform: translateY(12px);
-  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  transition: all var(--leore-transition-standard);
 }
 .toast.show {
   opacity: 1;
@@ -351,7 +417,7 @@ select:focus-visible,
 .product-card .media {
   position: relative;
   aspect-ratio: 3 / 4;
-  background: #1b1c1c;
+  background: var(--leore-surface-low);
   overflow: hidden;
 }
 .product-card .media img {
@@ -360,51 +426,61 @@ select:focus-visible,
   object-fit: cover;
   transition: transform 1s cubic-bezier(0.2, 0, 0, 1);
 }
-.product-card:hover .media img {
-  transform: scale(1.06);
-}
+.product-card:hover .media img { transform: scale(1.06); }
 .product-card .quick-add {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  transition: transform var(--leore-transition-standard);
 }
-.product-card:hover .quick-add {
-  transform: translateY(0);
-}
+.product-card:hover .quick-add { transform: translateY(0); }
 
 .filter-tab {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  letter-spacing: 0.15em;
+  font-family: var(--leore-font-label);
+  font-size: var(--leore-text-xs);
+  letter-spacing: var(--leore-label-tracking);
   text-transform: uppercase;
   padding-bottom: 10px;
-  border-bottom: 1px solid transparent;
-  color: #c4c7c7;
+  border-bottom: var(--leore-border-width) solid transparent;
+  color: var(--leore-text-muted);
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all var(--leore-transition-fast);
 }
-.filter-tab:hover {
-  color: #e4e2e1;
-}
+.filter-tab:hover { color: var(--leore-text); }
 .filter-tab.active {
-  color: #e4e2e1;
-  border-bottom-color: #e9c349;
+  color: var(--leore-text);
+  border-bottom-color: var(--leore-gold);
 }
 
 /* Simple fade-up for newsletter success state */
-.fade-in {
-  animation: fade-in 0.5s ease forwards;
-}
+.fade-in { animation: fade-in 0.5s ease forwards; }
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Consistent form-control geometry without changing existing layouts. */
+input,
+select,
+textarea {
+  border-radius: var(--leore-radius);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--leore-text-subtle);
+}
+
+/* Reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
