@@ -528,3 +528,19 @@ p, li {
     --leore-heading-md: 24px;
   }
 }
+
+
+/* LOCAL PREVIEW ONLY — remove this block before merging the typography PR.
+   Select a font pairing with ?type-preview=sora-manrope|manrope|inter-manrope */
+html[data-type-preview="sora-manrope"] {
+  --leore-font-display: "Sora", sans-serif;
+  --leore-font-body: "Manrope", sans-serif;
+}
+html[data-type-preview="manrope"] {
+  --leore-font-display: "Manrope", sans-serif;
+  --leore-font-body: "Manrope", sans-serif;
+}
+html[data-type-preview="inter-manrope"] {
+  --leore-font-display: "Inter", sans-serif;
+  --leore-font-body: "Manrope", sans-serif;
+}
