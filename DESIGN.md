@@ -50,37 +50,37 @@ colors:
   surface-variant: '#353535'
 typography:
   display-lg:
-    fontFamily: Sora
+    fontFamily: Bodoni Moda
     fontSize: 72px
-    fontWeight: '800'
-    lineHeight: 76px
-    letterSpacing: -0.04em
-  display-lg-mobile:
-    fontFamily: Sora
-    fontSize: 44px
-    fontWeight: '800'
-    lineHeight: 48px
-    letterSpacing: -0.03em
-  headline-lg:
-    fontFamily: Sora
-    fontSize: 32px
-    fontWeight: '700'
-    lineHeight: 40px
+    fontWeight: '400'
+    lineHeight: 0.98
     letterSpacing: -0.02em
+  display-lg-mobile:
+    fontFamily: Bodoni Moda
+    fontSize: 44px
+    fontWeight: '400'
+    lineHeight: 1.02
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Bodoni Moda
+    fontSize: 44px
+    fontWeight: '400'
+    lineHeight: 48px
+    letterSpacing: -0.01em
   headline-md:
-    fontFamily: Sora
-    fontSize: 24px
-    fontWeight: '600'
-    lineHeight: 32px
+    fontFamily: Bodoni Moda
+    fontSize: 32px
+    fontWeight: '400'
+    lineHeight: 35px
     letterSpacing: -0.01em
   body-lg:
-    fontFamily: Hanken Grotesk
+    fontFamily: Manrope
     fontSize: 18px
     fontWeight: '400'
     lineHeight: 28px
     letterSpacing: 0em
   body-md:
-    fontFamily: Hanken Grotesk
+    fontFamily: Manrope
     fontSize: 16px
     fontWeight: '400'
     lineHeight: 24px
@@ -90,9 +90,9 @@ typography:
     fontSize: 12px
     fontWeight: '500'
     lineHeight: 16px
-    letterSpacing: 0.15em
+    letterSpacing: 0.12em
   button:
-    fontFamily: Sora
+    fontFamily: Manrope
     fontSize: 14px
     fontWeight: '600'
     lineHeight: 20px
@@ -124,8 +124,8 @@ The interface operates exclusively in a high-contrast dark mode to emphasize pro
 ## Typography
 Typography is the primary architectural element of the design system. 
 
-- **Headlines:** Sora provides a modern, geometric, and "solid" feel. Large display type should be tightly kerned to feel like a singular block of form.
-- **Body:** Hanken Grotesk offers a clean, contemporary grotesque feel that is highly readable but maintains a sharp, professional edge.
+- **Headlines:** Bodoni Moda provides a modern, geometric, and "solid" feel. Large display type should be tightly kerned to feel like a singular block of form.
+- **Body:** Manrope offers a clean, contemporary grotesque feel that is highly readable but maintains a sharp, professional edge.
 - **Technical Labels:** JetBrains Mono is used for technical specs, sizing, and price tags to lean into the "utility" aspect of streetwear.
 
 All uppercase styling should be applied to labels and buttons to reinforce the brand's authoritative tone.
