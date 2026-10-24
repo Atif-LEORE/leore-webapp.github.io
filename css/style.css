@@ -19,21 +19,23 @@
   --leore-gold: #e9c349;
   --leore-danger: #ffb4ab;
 
-  /* Type system */
-  --leore-font-display: "Sora", sans-serif;
-  --leore-font-body: "Hanken Grotesk", sans-serif;
+  /* Type system — premium editorial, consistent across every page */
+  --leore-font-display: "Bodoni Moda", Georgia, serif;
+  --leore-font-body: "Manrope", sans-serif;
   --leore-font-label: "JetBrains Mono", monospace;
+  --leore-text-2xs: 11px;
   --leore-text-xs: 12px;
   --leore-text-sm: 14px;
   --leore-text-md: 16px;
   --leore-text-lg: 18px;
-  --leore-heading-md: 24px;
-  --leore-heading-lg: 32px;
+  --leore-heading-sm: 22px;
+  --leore-heading-md: 32px;
+  --leore-heading-lg: 44px;
   --leore-display-mobile: 44px;
   --leore-display: 72px;
-  --leore-line-body: 1.5;
-  --leore-line-heading: 1.12;
-  --leore-label-tracking: 0.15em;
+  --leore-line-body: 1.6;
+  --leore-line-heading: 1.08;
+  --leore-label-tracking: 0.12em;
 
   /* Layout and spacing */
   --leore-container-max: 1440px;
@@ -83,6 +85,7 @@ h4,
 h5,
 h6 {
   font-family: var(--leore-font-display);
+  font-weight: 400;
   line-height: var(--leore-line-heading);
 }
 
@@ -482,5 +485,46 @@ textarea::placeholder {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+
+/* ==========================================================================
+   Shared editorial typography utilities
+   Keep component layout and interaction styles unchanged.
+   ========================================================================== */
+.font-headline,
+.font-display {
+  font-family: var(--leore-font-display);
+  font-weight: 400;
+}
+
+.font-body,
+.font-button,
+.font-sans {
+  font-family: var(--leore-font-body);
+}
+
+.font-label,
+.filter-tab,
+.size-swatch,
+.qty-stepper span,
+.toast {
+  font-family: var(--leore-font-label);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+p, li {
+  text-wrap: pretty;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --leore-display: 44px;
+    --leore-heading-lg: 30px;
+    --leore-heading-md: 24px;
   }
 }
